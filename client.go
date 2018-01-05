@@ -76,6 +76,12 @@ func (kongAdminClient *KongAdminClient) Consumers() *ConsumerClient {
 	}
 }
 
+func (kongAdminClient *KongAdminClient) ConsumerCredentials() *ConsumerCredentialClient {
+	return &ConsumerCredentialClient{
+		config: kongAdminClient.config,
+	}
+}
+
 func (kongAdminClient *KongAdminClient) Plugins() *PluginClient {
 	return &PluginClient{
 		config: kongAdminClient.config,
