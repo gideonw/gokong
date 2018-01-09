@@ -89,11 +89,18 @@ func (client *ConsumerCredentialClient) GetJWTByID(consumerID, id string) (*Cons
 // DeleteJWTByID deletes from kong a consumer JWT credential by ID
 func (client *ConsumerCredentialClient) DeleteJWTByID(consumerID, id string) error {
 	res, _, errs := gorequest.New().Delete(client.config.HostAddress + ConsumersPath + consumerID + ConsumerJWTCredentialPath + id).End()
-	if errs != nil || res.StatusCode == http.StatusNoContent {
+	if errs != nil {
 		return fmt.Errorf("could not delete consumer JWT credential, result: %v error: %v", res, errs)
 	}
 
-	return nil
+	switch res.StatusCode {
+	case http.StatusNoContent: // success
+		fallthrough
+	case http.StatusNotFound: // didn't exsist so consider it deleted
+		return nil
+	default:
+		return fmt.Errorf("could not delete consumer JWT credential, result: %+v", res)
+	}
 }
 
 // ListJWTOnConsumer returns a list of all of the jwt credentials on a given consumer

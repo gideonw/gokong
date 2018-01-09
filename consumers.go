@@ -14,6 +14,7 @@ type ConsumerClient struct {
 
 // ConsumerRequest is used to request a consumer
 type ConsumerRequest struct {
+	ID       string `json:"id,omitempty"`
 	Username string `json:"username,omitempty"`
 	CustomID string `json:"custom_id,omitempty"`
 }
@@ -83,6 +84,43 @@ func (consumerClient *ConsumerClient) Create(consumerRequest *ConsumerRequest) (
 
 	if createdConsumer.ID == "" {
 		return nil, fmt.Errorf("could not create consumer, error: %v", body)
+	}
+
+	return createdConsumer, nil
+}
+
+// CreateOrUpdate a consumer
+func (consumerClient *ConsumerClient) CreateOrUpdate(consumerRequest *ConsumerRequest) (*Consumer, error) {
+	var exisitingConsumer *Consumer
+	if consumerRequest.CustomID != "" {
+		consumer, err := consumerClient.GetByID(consumerRequest.CustomID)
+		if err == nil {
+			exisitingConsumer = consumer
+		}
+	} else {
+		consumer, err := consumerClient.GetByUsername(consumerRequest.Username)
+		if err == nil {
+			exisitingConsumer = consumer
+		}
+	}
+
+	if exisitingConsumer != nil {
+		consumerRequest.ID = exisitingConsumer.ID
+	}
+
+	_, body, errs := gorequest.New().Put(consumerClient.config.HostAddress + ConsumersPath).Send(consumerRequest).End()
+	if errs != nil {
+		return nil, fmt.Errorf("could not create or update new consumer, error: %v", errs)
+	}
+
+	createdConsumer := &Consumer{}
+	err := json.Unmarshal([]byte(body), createdConsumer)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse consumer creation/update response, error: %v", err)
+	}
+
+	if createdConsumer.ID == "" {
+		return nil, fmt.Errorf("could not create or update consumer, error: %v", body)
 	}
 
 	return createdConsumer, nil
