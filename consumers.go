@@ -14,16 +14,18 @@ type ConsumerClient struct {
 
 // ConsumerRequest is used to request a consumer
 type ConsumerRequest struct {
-	ID       string `json:"id,omitempty"`
-	Username string `json:"username,omitempty"`
-	CustomID string `json:"custom_id,omitempty"`
+	ID        string `json:"id,omitempty"`
+	CreatedAt int    `json:"created_at,omitempty"`
+	Username  string `json:"username,omitempty"`
+	CustomID  string `json:"custom_id,omitempty"`
 }
 
 // Consumer kong dao for consumer
 type Consumer struct {
-	ID       string `json:"id,omitempty"`
-	CustomID string `json:"custom_id,omitempty"`
-	Username string `json:"username,omitempty"`
+	ID        string `json:"id,omitempty"`
+	CreatedAt int    `json:"created_at,omitempty"`
+	CustomID  string `json:"custom_id,omitempty"`
+	Username  string `json:"username,omitempty"`
 }
 
 // Consumers result type for listing consumers
@@ -106,6 +108,7 @@ func (consumerClient *ConsumerClient) CreateOrUpdate(consumerRequest *ConsumerRe
 
 	if exisitingConsumer != nil {
 		consumerRequest.ID = exisitingConsumer.ID
+		consumerRequest.CreatedAt = exisitingConsumer.CreatedAt
 	}
 
 	_, body, errs := gorequest.New().Put(consumerClient.config.HostAddress + ConsumersPath).Send(consumerRequest).End()
